@@ -92,10 +92,12 @@ class ColoredThread extends Thread {
 
     @Override
     public void run() {
-        fittingRoom.enter(color);
 
         try {
             Thread.sleep((long) (Math.random() * 1000));
+            fittingRoom.enter(color);
+            Thread.sleep((long) (Math.random() * 1000));
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

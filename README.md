@@ -49,6 +49,29 @@ while (!queue.isEmpty() &&
 
 2. There cannot be a mix of blue and green in the fitting room at the same time. Thus, there can only be at most n blue threads or at most n green threads inside the fitting room at a time.
 
+   
+This is satisfied by the following part of the code:
+```
+while (!queue.isEmpty() &&
+       (currentColor != null && !currentColor.equals(color) || // Different color is in the room
+        queue.peek() != currentThreadInfo || // Not this thread's turn
+        threadsInside >= semaphore.availablePermits())) { // No room available
+    lock.unlock(); // Release the lock while waiting
+    Thread.sleep(10); // Sleep to prevent tight looping
+    lock.lock(); // Re-acquire the lock before checking conditions
+}
+```
+In this segment, currentColor != null && !currentColor.equals(color) ensures that a thread (either blue or green) will wait if the current color inside the fitting room is different from its own color. This effectively prevents the mixing of blue and green threads inside the fitting room at the same time.
+
 3. The solution should not result in deadlock.
 
 4. The solution should not result in starvation. For example, blue threads cannot forever be blocked from entering the fitting room if green threads are lining up to enter as well.
+
+This is addressed in the code with the use of a fair ReentrantLock (initialized with true) and a queue to manage threads:
+```
+private final ReentrantLock lock = new ReentrantLock(true); // Fair lock to maintain order
+private final Queue<ThreadInfo> queue = new LinkedList<>();
+```
+The fair lock ensures that threads acquire the lock in the order they requested it, preventing indefinite postponement (or starvation) of any thread. The queue is used to maintain the order of threads waiting to enter the fitting room, further supporting the fairness in processing thread requests.
+
+These mechanisms combined ensure that threads are served in a fair manner, respecting the order of arrival and preventing the possibility of starvation.

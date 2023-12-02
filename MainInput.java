@@ -4,64 +4,74 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class FittingRoom {
-    // Semaphore to control the access to the fitting room
     private final Semaphore semaphore;
-    private final AtomicBoolean turnIsBlue; // Indicator for whose turn it is
+    private final ReentrantLock lock = new ReentrantLock(true); // Fair lock to maintain order
+    private final Queue<ThreadInfo> queue = new LinkedList<>();
     private int threadsInside = 0;
-    private final AtomicInteger blueWaiting; // Number of blue threads waiting
-    private final AtomicInteger greenWaiting; // Number of green threads waiting
-
+    private String currentColor = null;
 
     public FittingRoom(int slots) {
         this.semaphore = new Semaphore(slots, true);
-        this.turnIsBlue = new AtomicBoolean(true);
-        this.blueWaiting = new AtomicInteger(0);
-        this.greenWaiting = new AtomicInteger(0);
     }
-    public void tryEnter(String color) throws InterruptedException {
-        if (color.equals("Blue")) {
-            blueWaiting.incrementAndGet(); // A blue thread is waiting
-        } else {
-            greenWaiting.incrementAndGet(); // A green thread is waiting
-        }
 
-        while (this.turnIsBlue.get() != color.equals("Blue") || 
-              (this.turnIsBlue.get() && greenWaiting.get() > 0) || // Give priority to green if any are waiting
-              (!this.turnIsBlue.get() && blueWaiting.get() > 0)) {
-            Thread.sleep(10); // Sleep to prevent tight looping
-        }
+    private static class ThreadInfo {
+        final Thread thread;
+        final String color;
 
-        if (color.equals("Blue")) {
-            blueWaiting.decrementAndGet(); // Blue thread is no longer waiting
-        } else {
-            greenWaiting.decrementAndGet(); // Green thread is no longer waiting
+        ThreadInfo(Thread thread, String color) {
+            this.thread = thread;
+            this.color = color;
         }
-
-        semaphore.acquire(); // Acquire the semaphore if it's this color's turn
     }
-    public void enter(String color, long threadId) {
+
+    private void tryEnter(String color) throws InterruptedException {
+        lock.lock();
         try {
-            tryEnter(color); // Try to enter the room, waiting if it's not the turn of this color
-            synchronized (this) {
-                if (threadsInside == 0) {
-                    System.out.println(color + " only.");
-                }
-                threadsInside++;
-                System.out.println("Thread " + threadId + " " + color);
+            ThreadInfo currentThreadInfo = new ThreadInfo(Thread.currentThread(), color);
+            queue.add(currentThreadInfo);
+
+            while (!queue.isEmpty() &&
+                   (currentColor != null && !currentColor.equals(color) || // Different color is in the room
+                    queue.peek() != currentThreadInfo || // Not this thread's turn
+                    threadsInside >= semaphore.availablePermits())) { // No room available
+                lock.unlock(); // Release the lock while waiting
+                Thread.sleep(10); // Sleep to prevent tight looping
+                lock.lock(); // Re-acquire the lock before checking conditions
             }
+
+            queue.remove();
+            threadsInside++;
+            if (currentColor == null) {
+                currentColor = color; // Set the current color if the room was empty
+            }
+            semaphore.acquire();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void enter(String color) {
+        try {
+            tryEnter(color);
+            System.out.println("Thread " + Thread.currentThread().getId() + " " + color);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    public synchronized void exit(String color, long threadId) {
-        System.out.println("Thread " + threadId + " " + color + " is leaving.");
-        threadsInside--;
-        if (threadsInside == 0) {
-            turnIsBlue.set(!turnIsBlue.get());
-            System.out.println("Empty fitting room.");
+    public void exit(String color) {
+        lock.lock();
+        try {
+            System.out.println("Thread " + Thread.currentThread().getId() + " " + color + " is leaving.");
+            threadsInside--;
+            if (threadsInside == 0) {
+                currentColor = null; // Reset the current color when the room becomes empty
+                System.out.println("Empty fitting room.");
+            }
+            semaphore.release();
+        } finally { 
+            lock.unlock();
         }
-        semaphore.release();
     }
 }
 

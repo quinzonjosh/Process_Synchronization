@@ -1,8 +1,8 @@
 import java.util.concurrent.Semaphore;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.LinkedList;
+import java.util.Queue;
 class FittingRoom {
     private final Semaphore semaphore;
     private final ReentrantLock lock = new ReentrantLock(true); // Fair lock to maintain order
@@ -86,14 +86,14 @@ class ColoredThread extends Thread {
 
     @Override
     public void run() {
-        fittingRoom.enter(color, this.getId());
+        fittingRoom.enter(color);
 
         try {
             Thread.sleep((long) (Math.random() * 1000));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        fittingRoom.exit(color, this.getId());
+        fittingRoom.exit(color);
     }
 }
 

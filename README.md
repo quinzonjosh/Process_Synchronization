@@ -7,23 +7,17 @@ This project uses semaphores and reentrant locks as synchronization techniques. 
 
 ### List of variables for synchronization and their corresponding use
 
-1. **Semaphore**
-    - manages access to the fitting room by controlling the number of threads allowed to enter concurrently
+1. **Semaphore** -manages access to the fitting room by controlling the number of threads allowed to enter concurrently
 
-2. **lock**
-    - Ensures exclusive access to critical sections of code where shared data is accessed or modified
+2. **lock** - Ensures exclusive access to critical sections of code where shared data is accessed or modified
 
-3. **queue**
-    - Keeps track of the order in which threads arrived at the fitting room
+3. **queue** - Keeps track of the order in which threads arrived at the fitting room
 
-4. **threadsInside**
-    - Tracks the number of threads currently inside the fitting room
+4. **threadsInside** - Tracks the number of threads currently inside the fitting room
 
-5. **currentColor**
-    - Records the color of the clothing currently inside the fitting room
+5. **currentColor** - Records the color of the clothing currently inside the fitting room
 
-6. **ThreadInfo**
-    - contains info about a thread, including the thread itself and the color of its clothing
+6. **ThreadInfo** - contains info about a thread, including the thread itself and the color of its clothing
 
 
 

@@ -43,6 +43,12 @@ class FittingRoom {
             threadsInside++;
             if (currentColor == null) {
                 currentColor = color; // Set the current color if the room was empty
+
+                if (color.equals("Blue")) {
+                    System.out.println("Thread " + Thread.currentThread().getId() + " Blue only.");
+                } else if (color.equals("Green")) {
+                    System.out.println("Thread " + Thread.currentThread().getId() + " Green only.");
+                }
             }
             semaphore.acquire();
         } finally {

@@ -109,3 +109,54 @@ private final Queue<ThreadInfo> queue = new LinkedList<>();
 The fair lock ensures that threads acquire the lock in the order they requested it, preventing indefinite postponement (or starvation) of any thread. The queue is used to maintain the order of threads waiting to enter the fitting room, further supporting the fairness in processing thread requests.
 
 These mechanisms combined ensure that threads are served in a fair manner, respecting the order of arrival and preventing the possibility of starvation.
+
+### How to Run
+
+1. **Compile and Run:**
+
+   Open your terminal, navigate to the directory with `MainInput.java`, and use these commands:
+
+   ```bash
+   javac MainInput.java
+   java MainInput
+   ```
+
+2. **Input Values:**
+
+   Enter the number of slots, blue threads, and green threads as prompted.
+
+   ```bash
+   Enter the number of slots: 1
+   Enter the number of blue threads: 2
+   Enter the number of green threads: 2
+   ```
+
+3. **Simulation Output:**
+
+   The program simulates the fitting room scenario with the specified rules. Due to the introduction of random delays in the thread execution order, the output may vary between runs. Here is an example of a possible output:
+
+   ```bash
+   Thread 13 Blue only.
+   Thread 13 Blue
+   Thread 13 Blue is leaving.
+   Empty fitting room.
+   Thread 14 Blue only.
+   Thread 14 Blue
+   Thread 14 Blue is leaving.
+   Empty fitting room.
+   Thread 15 Green only.
+   Thread 15 Green
+   Thread 15 Green is leaving.
+   Empty fitting room.
+   Thread 16 Green only.
+   Thread 16 Green
+   Thread 16 Green is leaving.
+   Empty fitting room.
+   ```
+
+### Expected Output
+
+- Blue or green threads announce their entry.
+- Each thread prints ID, color, and a leaving message.
+- Program ends with "Empty fitting room" after each thread leaves.
+
